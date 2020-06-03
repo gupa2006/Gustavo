@@ -1,0 +1,53 @@
+unit Gustavo;
+
+interface
+
+uses
+  Windows, Messages, Classes, Graphics, Controls, Forms,
+  Dialogs, Mask, StdCtrls, ExtCtrls,ValidaCPF, BuscarCepJson,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP;
+
+type
+  TCadastroCliente = class(TForm)
+    Panel1: TPanel;
+    Panel2: TPanel;
+    Label1: TLabel;
+    edtNome: TEdit;
+    edtID: TMaskEdit;
+    edtCPF: TMaskEdit;
+    edtTel: TMaskEdit;
+    edtEmail: TEdit;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    GroupBox1: TGroupBox;
+    IdHTTP1: TIdHTTP;
+    Memo1: TMemo;
+    procedure edtCPFExit(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  CadastroCliente: TCadastroCliente;
+
+implementation
+    uses SysUtils;
+{$R *.dfm}
+
+procedure TCadastroCliente.edtCPFExit(Sender: TObject);
+var
+  CEP, Logradouro, Bairro, Cidade, Estado, Pais : string;
+begin
+  if not CPFValido(edtCPF.Text) then
+    edtCPF.text := '';
+  //BuscaCepNovo('22720011',Memo1);
+  //BuscarCEP('22720011', Logradouro, Bairro, Cidade, Estado, Pais);
+  novo('22720011',Memo1);
+
+end;
+
+end.

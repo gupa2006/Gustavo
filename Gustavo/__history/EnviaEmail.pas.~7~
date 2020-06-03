@@ -1,0 +1,11 @@
+unit EnviaEmail;
+
+interface
+
+uses
+  IdSMTP, IdSSLOpenSSL, IdMessage, IdText, IdAttachmentFile,
+  IdExplicitTLSClientServerBase;
+
+implementation
+
+end.

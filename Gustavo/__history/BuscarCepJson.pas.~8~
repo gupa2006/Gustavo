@@ -1,0 +1,114 @@
+unit BuscarCepJson;
+
+interface
+
+uses
+  System.JSON, Vcl.Dialogs, Vcl.StdCtrls, FireDAC.Comp.Client, System.Classes,
+  REST.Client, IPPeerClient, System.SysUtils;
+
+
+    //proocedure BuscarCEP(CEP,Logradouro, Bairro, Cidade, Estado, Pais: String);
+    function PaisBrasil(Estado:String): string;
+    procedure BuscarCEP(CEP,Logradouro, Bairro, Cidade, Estado, Pais: String);
+
+implementation
+
+{ TCEP }
+
+Procedure BuscarCEP(CEP, Logradouro, Bairro, Cidade, Estado, Pais: String);
+var
+  data: TJSONObject;
+  RESTClient1: TRESTClient;
+  RESTRequest1: TRESTRequest;
+  RESTResponse1: TRESTResponse;
+  Endereco: TStringList;
+  teste:string;
+begin
+  RESTClient1 := TRESTClient.Create(nil);
+  RESTRequest1 := TRESTRequest.Create(nil);
+  RESTResponse1 := TRESTResponse.Create(nil);
+  RESTRequest1.Client := RESTClient1;
+  RESTRequest1.Response := RESTResponse1;
+  RESTClient1.BaseURL := 'https://viacep.com.br/ws/' + CEP + '/json';
+  //RESTRequest1.Execute;
+  teste:=RESTRequest1.GetFullRequestURL(True);
+  data := RESTResponse1.JSONValue as TJSONObject;
+  try
+    //Endereco := TStringList.Create;
+    if Assigned(data) then
+    begin
+        try
+          Logradouro := (data.Values['logradouro'].Value);
+        except
+          on Exception do
+            Logradouro := '';
+        end;
+        try
+          Bairro := (data.Values['bairro'].Value);
+        except
+         on Exception do
+           Bairro := '';
+        end;
+        try
+          begin
+            Estado := (data.Values['uf'].Value);
+            Pais := PaisBrasil(Estado);
+          end;
+        except
+         on Exception do
+           Estado := '';
+        end;
+        try
+          Cidade := (data.Values['localidade'].Value);
+        except
+         on Exception do
+           Cidade := '';
+        end;
+        try
+          Bairro := (data.Values['bairro'].Value);
+        except
+         on Exception do
+           Bairro := '';
+        end;
+      end;
+  finally
+    FreeAndNil(data);
+  end;
+  //Result := Endereco;
+end;
+
+function PaisBrasil(Estado:String): string;
+begin
+  If Estado = 'AC' Then Result := 'Brasil'
+  Else If Estado = 'AL' Then Result := 'Brasil'
+  Else If Estado = 'AP' Then Result := 'Brasil'
+  Else If Estado = 'AM' Then Result := 'Brasil'
+  Else If Estado = 'BA' Then Result := 'Brasil'
+  Else If Estado = 'CE' Then Result := 'Brasil'
+  Else If Estado = 'DF' Then Result := 'Brasil'
+  Else If Estado = 'ES' Then Result := 'Brasil'
+  Else If Estado = 'GO' Then Result := 'Brasil'
+  Else If Estado = 'MA' Then Result := 'Brasil'
+  Else If Estado = 'MT' Then Result := 'Brasil'
+  Else If Estado = 'MS' Then Result := 'Brasil'
+  Else If Estado = 'MG' Then Result := 'Brasil'
+  Else If Estado = 'PA' Then Result := 'Brasil'
+  Else If Estado = 'PB' Then Result := 'Brasil'
+  Else If Estado = 'PR' Then Result := 'Brasil'
+  Else If Estado = 'PE' Then Result := 'Brasil'
+  Else If Estado = 'PI' Then Result := 'Brasil'
+  Else If Estado = 'RJ' Then Result := 'Brasil'
+  Else If Estado = 'RN' Then Result := 'Brasil'
+  Else If Estado = 'RS' Then Result := 'Brasil'
+  Else If Estado = 'RO' Then Result := 'Brasil'
+  Else If Estado = 'RR' Then Result := 'Brasil'
+  Else If Estado = 'SC' Then Result := 'Brasil'
+  Else If Estado = 'SP' Then Result := 'Brasil'
+  Else If Estado = 'SE' Then Result := 'Brasil'
+  Else If Estado = 'TO' Then Result := 'Brasil'
+  Else Result := '';
+end;
+
+
+end.
+ 

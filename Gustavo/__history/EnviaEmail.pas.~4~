@@ -1,0 +1,148 @@
+unit EnviaEmail;
+
+interface
+
+uses
+  WinInet,
+  IdMessage, IdSMTP,
+  IdBaseComponent, IdComponent, IdIOHandler, IdIOHandlerSocket, IdSSLOpenSSL;
+
+  function IsConnected: Boolean;
+  function EnviaMail(Email, Conta, Senha, Autentica, Smtp, Auth_SSL, Nom_exibe, Porta_smtp, Corpo, Destinatario, Assunto : String) : Boolean;
+  procedure Enviar(Sender: TObject);
+
+implementation
+
+function IsConnected: Boolean;
+const
+  INTERNET_CONNECTION_MODEM = 1;
+  INTERNET_CONNECTION_LAN = 2;
+  INTERNET_CONNECTION_PROXY = 4;
+  INTERNET_CONNECTION_MODEM_BUSY = 8;
+var
+  dwConnectionTypes : DWORD;
+begin
+  dwConnectionTypes := INTERNET_CONNECTION_MODEM + INTERNET_CONNECTION_LAN + INTERNET_CONNECTION_PROXY;
+  If InternetGetConnectedState(@dwConnectionTypes,0) then
+    Result := True
+  else
+    Result := False;
+end;
+
+
+// Função para enviar email, pode ser incluida direto em uma uses sem formulario para simplificar o fonte
+
+function EnviaMail(Email, Conta, Senha, Autentica, Smtp, Auth_SSL, Nom_exibe, Porta_smtp, Corpo, Destinatario, Assunto : String) : Boolean;
+var
+Mensagem: TIdMessage;
+cnxSMTP: TIdSMTP;
+AuthSSL: TIdSSLIOHandlerSocket;
+
+begin
+Result := True;
+
+// verifica se há conexão
+if not IsConnected then
+ begin
+  Result := false;
+  Exit;
+ end;
+
+try
+Mensagem := TIdMessage.Create(nil); // crio os componemtes em tempo de execução
+cnxSMTP  := TIdSMTP.Create(nil);
+
+{ OBS para não dar muita volta:
+Auth_SSL = S
+Auth_SSL = N
+
+Autentica = S
+Autentica = N
+
+Para verificar se há necessidade de autenticação ou ssl}
+
+
+if Auth_SSL = 'S' then
+ begin
+  AuthSSL := TIdSSLIOHandlerSocket.Create(nil);
+  cnxSMTP.IOHandler := AuthSSL;
+  AuthSSL.SSLOptions.Method := sslvSSLv2;
+  AuthSSL.SSLOptions.Mode := sslmClient;
+ end;
+
+Mensagem.From.Name := 'REMETENTE'; // Nome do Remetente
+Mensagem.From.Address := Email; // E-mail do Remetente = email valido...
+Mensagem.Recipients.EMailAddresses := Destinatario;  // destinatario
+Mensagem.Priority := mpHighest;
+Mensagem.Subject := Assunto; // Assunto do E-mail
+
+cnxSMTP.Host := Smtp;  // smtp terra}
+cnxSMTP.Username := Conta;
+cnxSMTP.Password := Senha;
+if Autentica = 'S' then
+cnxSMTP.AuthenticationType := atLogin;
+if Autentica = 'N' then
+cnxSMTP.AuthenticationType := atNone;
+
+cnxSMTP.Port := StrToInt(Porta_smtp);
+
+Mensagem.Body.Clear;
+Mensagem.Body.Add(Corpo);
+
+cnxSMTP.Connect;
+Try
+cnxSMTP.Send(Mensagem);
+except
+  showmessage('Erro ao tentar enviar o email para ' + Destinatario + ' 1ª Tentativa');
+  cnxSMTP.Disconnect;
+  cnxSMTP.Host := Smtp;   // smtp
+  cnxSMTP.AuthenticationType := atNone;
+  cnxSMTP.Connect;
+  try
+    cnxSMTP.Send(Mensagem);
+  except
+   begin
+    showmessage('Erro ao tentar enviar o email para ' + Destinatario + ' 2ª Tentativa');
+    Result := false;
+    showmessage('Não pode enviar o email para ' + Destinatario + #13#13 + 'Verifique as configurações da conta!');
+   end;
+  end;
+  cnxSMTP.Disconnect;
+end;
+cnxSMTP.Disconnect;
+
+
+finally
+Mensagem.free; // destruo se não ha uso
+cnxSMTP.free;
+if Auth_SSL = 'S' then // destruo o ssl se tiver autenticação
+  AuthSSL.Free;
+end;
+
+
+if Result then
+ showmessage('E-Mail teste enviado para ' + Destinatario);
+end;
+
+// fim
+
+
+//Agora em um formulario coloque um botão e use a função envia email assim:
+
+
+procedure Enviar(Sender: TObject);
+begin
+EnviaMail('email@servidor.com.br', //  Email
+          'conta', //Conta sem_arroba_ou_com_arroba_depende_do_servidor
+          'senha',// Senha
+          'S', // Autentica
+          'smtp.gmail.com', // Smtp
+          'S', // Auth_SSL
+          'Nome para exibição', // Nom_exibe
+          'Porta', // Porta_smtp - SEMPRE UM VALOR NUMERICO, mas com APOSTROFE '
+          'Corpo do email', // Corpo - Texto que vai na mensagem
+          'Destinatario(s)', // Destinatario, ex: eu@vc.com;teste@teste.com...
+          'Assunto');  // Assunto
+end;
+
+end.

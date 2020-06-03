@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2020/06/02 17:51:55.000.294,=C:\_work\Gustavo\Unit1.pas</Transaction>
+    <Transaction>2020/06/02 17:55:30.000.553,C:\_work\Gustavo\Unit1.pas=C:\_work\Gustavo\EnviaEmail.pas</Transaction>
+    <Transaction>2020/06/02 23:37:27.000.994,C:\_work\Gustavo\EnviaEmail.pas=</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -1,0 +1,232 @@
+unit BuscarCepJson;
+
+interface
+
+uses
+  System.JSON, Vcl.Dialogs, Vcl.StdCtrls, FireDAC.Comp.Client, System.Classes,
+  REST.Client, IPPeerClient, System.SysUtils,IdHTTP;
+
+
+    //proocedure BuscarCEP(CEP,Logradouro, Bairro, Cidade, Estado, Pais: String);
+    function PaisBrasil(Estado:String): string;
+    procedure BuscarCEP(CEP,Logradouro, Bairro, Cidade, Estado, Pais: String);
+   // procedure BuscaCepNovo(CEP:String;Memo:TMemo);
+    procedure novo(CEP:String;Memo:TMemo);
+
+implementation
+
+{ TCEP }
+
+procedure novo(CEP:String;Memo:TMemo);
+var dados : TStrings;
+retorno : string;
+  URL: String;
+  JsonStreamRetorno: TStringStream;
+  pgHtml,JsonStreamEnvio : TStringList;
+  Json: string;
+  sResponse: string;
+  JsonToSend: TMemoryStream;
+  //Memo:TMemo;
+  Memo2:string;
+  idHttp:TIdHTTP;
+  FSSL: TIdSSLIOHandlerSocketBase;
+begin
+  URL :='https://viacep.com.br/ws/' + CEP + '/json';
+  idHttp := TIdHTTP.Create;
+  idHttp.Request.URL := URL;
+    idHttp.Request.CustomHeaders.Clear;
+    idHttp.Request.Accept := 'application/json';
+    idHttp.Request.ContentType := 'application/json';
+    idHttp.Request.Connection := 'Keep-Alive';
+    idHttp.Request.UserAgent := 'Mozilla/3.0 (compatible; Indy Library)';
+    idHttp.Request.BasicAuthentication  := True;
+    idHttp.HandleRedirects := true;
+        FSSL := TIdSSLIOHandlerSocketBase.Create;
+        idHttp.IOHandler := FSSL;
+    dados := TStringList.Create();
+try
+dados.Add(Memo.Text);
+retorno := idHttp.Get(URL);
+retorno := idHttp.Post(URL,dados);
+finally
+end;
+dados.Free;
+end;
+
+      {
+procedure BuscaCepNovo(CEP:String;Memo:TMemo);
+var
+  URL, Retorno: String;
+  JsonStreamRetorno: TStringStream;
+  pgHtml,JsonStreamEnvio : TStringList;
+  Json: string;
+  sResponse: string;
+  JsonToSend: TMemoryStream;
+  //Memo:TMemo;
+  Memo2:string;
+  idHttp:TIdHTTP;
+  FSSL: TIdSSLIOHandlerSocketBase;
+
+begin
+  //Memo := TMemo.Create();
+  pgHtml := TStringList.Create;
+  URL :='https://viacep.com.br/ws/' + CEP + '/json';
+  JsonStreamEnvio := TStringList.Create;
+  JsonStreamRetorno := TStringStream.Create('');
+
+  try
+    idHttp := TIdHTTP.Create;
+   {idHttp.Request.Clear;
+
+    idHttp.Request.ContentType := 'application/json';
+    idhttp.Request.Charset := 'utf-8';
+ 
+
+ 
+    idHttp.Request.ContentType := 'application/json;odata=light;charset=utf-8;';
+    idHttp.Request.Connection  := 'keep-alive';
+    idHttp.Request.UserAgent   := 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36';
+    idHttp.Request.AcceptEncoding := 'gzip, deflate';
+    idHttp.Request.AcceptLanguage := 'pt-BR,pt;q=0.8,en-US;q=0.6,en;q=0.4';
+    idHttp.Request.CacheControl := 'no-cache';
+    {                                     }
+               {
+     idHttp.Request.ContentType := 'application/json';
+    idhttp.Request.Charset := 'UTF-8';
+    IdHTTP1.Response.ContentType := 'application/json';
+    IdHTTP1.Response.ResponseText := 'UTF-8';
+    IdHTTP1.BoundPortMax := 5000;
+    FSSL := TIdSSLIOHandlerSocketBase.Create;
+    IdHttp.IOHandler := FSSL;
+ 
+    // Set username and password: 
+    idHttp.Request.Clear; 
+    idHttp.Request.BasicAuthentication := True;
+
+ 
+    idHttp.Response.ContentType := 'application/json';
+    idHttp.Response.CharSet := 'UTF-8';
+
+   idHttp.Request.ContentType := 'application/json';
+   idHttp.Request.AcceptCharSet := 'UTF-8';
+    FSSL := TIdSSLIOHandlerSocketBase.Create;
+    IdHttp.IOHandler := FSSL;
+   idHttp.Request.Clear;
+   idHttp.Request.BasicAuthentication := True;
+   idHttp.Response.ContentType := 'application/json';
+   idHttp.Response.ResponseText := 'UTF-8';
+   idHttp.BoundPortMax := 5000;
+    try
+       JsonStreamEnvio.Add('Json');
+      idHttp.Post(URL, JsonStreamEnvio, JsonStreamRetorno);
+
+      Memo2 := IdHTTP.Post(URL, JsonStreamRetorno);
+
+    except
+ 
+      on E:EIdHTTPProtocolException do
+
+        //Memo2.Lines.Add(e.ErrorMessage);
+ 
+    end;
+ 
+   finally
+     //memo2.Lines.add(JsonStreamRetorno.DataString);
+   end;
+end;   
+       }
+Procedure BuscarCEP(CEP, Logradouro, Bairro, Cidade, Estado, Pais: String);
+var
+  data: TJSONObject;
+  RESTClient1: TRESTClient;
+  RESTRequest1: TRESTRequest;
+  RESTResponse1: TRESTResponse;
+  Endereco: TStringList;
+begin
+  RESTClient1 := TRESTClient.Create(nil);
+  RESTRequest1 := TRESTRequest.Create(nil);
+  RESTResponse1 := TRESTResponse.Create(nil);
+  RESTRequest1.Client := RESTClient1;
+  RESTRequest1.Response := RESTResponse1;
+  RESTClient1.BaseURL := 'https://viacep.com.br/ws/' + CEP + '/json';
+  RESTRequest1.Execute;
+  data := RESTResponse1.JSONValue as TJSONObject;
+  try
+    //Endereco := TStringList.Create;
+    if Assigned(data) then
+    begin
+        try
+          Logradouro := (data.Values['logradouro'].Value);
+        except
+          on Exception do
+            Logradouro := '';
+        end;
+        try
+          Bairro := (data.Values['bairro'].Value);
+        except
+         on Exception do
+           Bairro := '';
+        end;
+        try
+          begin
+            Estado := (data.Values['uf'].Value);
+            Pais := PaisBrasil(Estado);
+          end;
+        except
+         on Exception do
+           Estado := '';
+        end;
+        try
+          Cidade := (data.Values['localidade'].Value);
+        except
+         on Exception do
+           Cidade := '';
+        end;
+        try
+          Bairro := (data.Values['bairro'].Value);
+        except
+         on Exception do
+           Bairro := '';
+        end;
+      end;
+  finally
+    FreeAndNil(data);
+  end;
+  //Result := Endereco;
+end;
+
+function PaisBrasil(Estado:String): string;
+begin
+  If Estado = 'AC' Then Result := 'Brasil'
+  Else If Estado = 'AL' Then Result := 'Brasil'
+  Else If Estado = 'AP' Then Result := 'Brasil'
+  Else If Estado = 'AM' Then Result := 'Brasil'
+  Else If Estado = 'BA' Then Result := 'Brasil'
+  Else If Estado = 'CE' Then Result := 'Brasil'
+  Else If Estado = 'DF' Then Result := 'Brasil'
+  Else If Estado = 'ES' Then Result := 'Brasil'
+  Else If Estado = 'GO' Then Result := 'Brasil'
+  Else If Estado = 'MA' Then Result := 'Brasil'
+  Else If Estado = 'MT' Then Result := 'Brasil'
+  Else If Estado = 'MS' Then Result := 'Brasil'
+  Else If Estado = 'MG' Then Result := 'Brasil'
+  Else If Estado = 'PA' Then Result := 'Brasil'
+  Else If Estado = 'PB' Then Result := 'Brasil'
+  Else If Estado = 'PR' Then Result := 'Brasil'
+  Else If Estado = 'PE' Then Result := 'Brasil'
+  Else If Estado = 'PI' Then Result := 'Brasil'
+  Else If Estado = 'RJ' Then Result := 'Brasil'
+  Else If Estado = 'RN' Then Result := 'Brasil'
+  Else If Estado = 'RS' Then Result := 'Brasil'
+  Else If Estado = 'RO' Then Result := 'Brasil'
+  Else If Estado = 'RR' Then Result := 'Brasil'
+  Else If Estado = 'SC' Then Result := 'Brasil'
+  Else If Estado = 'SP' Then Result := 'Brasil'
+  Else If Estado = 'SE' Then Result := 'Brasil'
+  Else If Estado = 'TO' Then Result := 'Brasil'
+  Else Result := '';
+end;
+
+
+end.
+ 

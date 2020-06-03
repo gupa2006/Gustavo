@@ -1,0 +1,16 @@
+program Gustavo_Projeto;
+
+uses
+  Forms,
+  Gustavo in 'Gustavo.pas' {CadastroCliente},
+  ValidaCPF in 'ValidaCPF.pas',
+  BuscarCepJson in 'BuscarCepJson.pas',
+  EnviaEmail in 'EnviaEmail.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TCadastroCliente, CadastroCliente);
+  Application.Run;
+end.
